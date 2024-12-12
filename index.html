@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
+    <!-- Optional: Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .container { width: 80%; max-width: 600px; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
@@ -56,10 +58,17 @@
             // Use a CORS proxy to bypass CORS issues
             const apiUrl = `https://cors-anywhere.herokuapp.com/https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`;
 
+            // Use Fetch API to get data from the external server
             fetch(apiUrl)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
+                        // Update download links
                         downloadMP3.href = data.mp3Url || '#';
                         downloadMP4.href = data.mp4Url || '#';
                         downloadButtons.style.display = 'flex';
