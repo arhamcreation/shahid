@@ -52,8 +52,8 @@
             const videoIdMatch = videoUrl.match(youtubeRegex);
             const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
 
-            // Replace this with your actual API link if available
-            fetch(`https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`)
+            // Use a CORS proxy to bypass CORS issues
+            fetch(`https://cors-anywhere.herokuapp.com/https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -65,7 +65,7 @@
                     }
                 })
                 .catch(error => {
-                    errorMessage.textContent = 'Error occurred while fetching the data.';
+                    errorMessage.textContent = 'Error occurred while fetching the data. Please try again later.';
                     console.error('Error:', error);
                 });
 
