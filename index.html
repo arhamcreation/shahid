@@ -3,71 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Downloader</title>
+    <title>YouTube Downloader</title>
     <style>
+        /* CSS for styling */
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            width: 60%;
-            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
             padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
-            color: #333;
+            margin-bottom: 20px;
         }
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        .input-group input {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .input-group button {
-            width: 18%;
-            padding: 10px;
-            font-size: 16px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .input-group button:hover {
-            background-color: #218838;
-        }
-        .results {
-            margin-top: 20px;
-            display: none;
-        }
-        .result-item {
-            background-color: #f9f9f9;
+        input[type="text"] {
+            width: 100%;
             padding: 10px;
             margin: 10px 0;
+            border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 16px;
+        }
+        .buttons {
             display: flex;
             justify-content: space-between;
+            margin-top: 20px;
         }
-        .result-item a {
-            color: #007bff;
+        .buttons a {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
             text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
         }
-        .result-item a:hover {
-            text-decoration: underline;
+        .buttons a:hover {
+            background-color: #45a049;
         }
-        .error-message {
+        .error {
             color: red;
+            font-size: 14px;
             text-align: center;
         }
     </style>
@@ -76,60 +63,51 @@
 
 <div class="container">
     <h1>YouTube Video Downloader</h1>
-    <div class="input-group">
-        <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL">
-        <button id="downloadBtn">Download</button>
-    </div>
-
-    <div class="results" id="results">
-        <div id="errorMessage" class="error-message"></div>
-        <div id="downloadLinks"></div>
-    </div>
+    <form id="videoForm">
+        <input type="text" id="videoUrl" placeholder="Enter YouTube video URL">
+        <div class="error" id="errorMessage"></div>
+        <div class="buttons" id="downloadButtons" style="display:none;">
+            <a href="#" id="downloadMP3" target="_blank">Download MP3</a>
+            <a href="#" id="downloadMP4" target="_blank">Download MP4</a>
+        </div>
+    </form>
 </div>
 
 <script>
-    document.getElementById("downloadBtn").addEventListener("click", function () {
-        var videoUrl = document.getElementById("videoUrl").value.trim();
-        var errorMessage = document.getElementById("errorMessage");
-        var downloadLinks = document.getElementById("downloadLinks");
-        
-        if (!videoUrl) {
-            errorMessage.innerHTML = "Please enter a valid URL.";
-            return;
-        }
-
-        // Simple regex to check if it's a valid YouTube URL
-        var youtubeRegex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?v=|shorts\/)([a-zA-Z0-9_-]{11}))|(?:https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11}))/;
-        var match = videoUrl.match(youtubeRegex);
-        
-        if (match) {
-            var videoId = match[1] || match[2];
-            showDownloadOptions(videoId);
-        } else {
-            errorMessage.innerHTML = "Invalid YouTube URL. Please try again.";
-            downloadLinks.innerHTML = "";
-            document.getElementById("results").style.display = "none";
-        }
+    // JavaScript to handle validation and link generation
+    document.getElementById("videoForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        validateAndGenerateLinks();
     });
 
-    function showDownloadOptions(videoId) {
-        var downloadLinks = document.getElementById("downloadLinks");
-        var resultsContainer = document.getElementById("results");
-        
-        // Simulating download options for MP3 and MP4
-        downloadLinks.innerHTML = `
-            <div class="result-item">
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">Watch Video</a>
-                <span>MP4 Download</span>
-            </div>
-            <div class="result-item">
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">Watch Video</a>
-                <span>MP3 Download</span>
-            </div>
-        `;
+    function validateAndGenerateLinks() {
+        const videoUrl = document.getElementById("videoUrl").value.trim();
+        const errorMessage = document.getElementById("errorMessage");
+        const downloadButtons = document.getElementById("downloadButtons");
+        const downloadMP3 = document.getElementById("downloadMP3");
+        const downloadMP4 = document.getElementById("downloadMP4");
 
-        // Show results section
-        resultsContainer.style.display = "block";
+        // Clear previous error message and reset visibility
+        errorMessage.textContent = '';
+        downloadButtons.style.display = 'none';
+
+        // Regular expression to validate YouTube URL
+        const youtubeRegex = /(?:https?:\/\/(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/?|(?:v|e(?:mbed)?)\/|\S+?[\?&]v=)([a-zA-Z0-9_-]{11}))(?:[^\n]*)|youtu\.be\/([a-zA-Z0-9_-]{11}))?/;
+
+        if (youtubeRegex.test(videoUrl)) {
+            const videoIdMatch = videoUrl.match(youtubeRegex);
+            const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
+
+            // Simulate the download links (backend integration needed to actually process)
+            downloadMP3.href = `https://example.com/download/mp3/${videoId}`; // Replace with actual API link
+            downloadMP4.href = `https://example.com/download/mp4/${videoId}`; // Replace with actual API link
+
+            // Show download options
+            downloadButtons.style.display = 'flex';
+        } else {
+            // Show error if URL is not valid
+            errorMessage.textContent = 'Please enter a valid YouTube URL.';
+        }
     }
 </script>
 
