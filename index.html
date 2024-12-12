@@ -100,19 +100,19 @@
             const videoIdMatch = videoUrl.match(youtubeRegex);
             const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
 
-            // Replace with an actual working API link
-            fetch(`https://your-api-server.com/download?videoId=${videoId}`)
+            // Use external API to get download links
+            fetch(`https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         // Update download links with actual API responses
-                        downloadMP3.href = data.mp3Url;  // Replace with actual MP3 link
-                        downloadMP4.href = data.mp4Url;  // Replace with actual MP4 link
+                        downloadMP3.href = data.mp3Url || '#';  // Actual MP3 link
+                        downloadMP4.href = data.mp4Url || '#';  // Actual MP4 link
 
                         // Show download options
                         downloadButtons.style.display = 'flex';
                     } else {
-                        errorMessage.textContent = 'Unable to fetch download links.';
+                        errorMessage.textContent = data.error || 'Unable to fetch download links.';
                     }
                 })
                 .catch(error => {
