@@ -1,42 +1,57 @@
 const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
-// Enable CORS
-app.use(cors());
-
-// Serve static files (like HTML, CSS, JS)
+// Serve static files (HTML, CSS, JS) from the 'public' folder
 app.use(express.static('public'));
 
-// API endpoint to handle download request
+// Ensure the 'downloads' folder exists
+if (!fs.existsSync('downloads')) {
+    fs.mkdirSync('downloads');
+}
+
+// Video download and convert endpoint
 app.get('/download', async (req, res) => {
     const videoId = req.query.videoId;
 
     if (!videoId) {
-        return res.status(400).json({ error: 'No video ID provided' });
+        return res.status(400).send('Error: videoId query parameter is required.');
     }
 
+    const videoURL = `https://www.youtube.com/watch?v=${videoId}`;
+
     try {
-        const url = `https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`; // Example download API
-
-        // Making a request to the external YouTube MP3 download service
-        const response = await axios.get(url);
-
-        // If the external service works, return the download link
-        if (response.data && response.data.link) {
-            res.json({ downloadLink: response.data.link });
-        } else {
-            res.status(500).json({ error: 'Error fetching download link' });
+        if (!ytdl.validateURL(videoURL)) {
+            return res.status(400).send('Invalid YouTube URL.');
         }
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch data from external service' });
+
+        const info = await ytdl.getInfo(videoURL);
+        const videoTitle = info.videoDetails.title;
+        const outputPath = path.join(__dirname, 'downloads', `${videoTitle}.mp4`);
+
+        res.header('Content-Disposition', `attachment; filename="${videoTitle}.mp4"`);
+
+        ytdl(videoURL, { format: 'mp4' })
+            .pipe(ffmpeg()
+                .input('pipe:0')
+                .audioCodec('aac')
+                .videoCodec('libx264')
+                .format('mp4')
+                .pipe(res, { end: true })
+            );
+
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).send('Error processing video.');
     }
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
 });
