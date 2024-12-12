@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
+    <!-- Favicon to fix the error -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         /* CSS for styling */
         body {
@@ -98,12 +100,25 @@
             const videoIdMatch = videoUrl.match(youtubeRegex);
             const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
 
-            // Simulate the download links (backend integration needed to actually process)
-            downloadMP3.href = `https://example.com/download/mp3/${videoId}`; // Replace with actual API link
-            downloadMP4.href = `https://example.com/download/mp4/${videoId}`; // Replace with actual API link
+            // Replace with an actual working API link
+            fetch(`https://your-api-server.com/download?videoId=${videoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update download links with actual API responses
+                        downloadMP3.href = data.mp3Url;  // Replace with actual MP3 link
+                        downloadMP4.href = data.mp4Url;  // Replace with actual MP4 link
 
-            // Show download options
-            downloadButtons.style.display = 'flex';
+                        // Show download options
+                        downloadButtons.style.display = 'flex';
+                    } else {
+                        errorMessage.textContent = 'Unable to fetch download links.';
+                    }
+                })
+                .catch(error => {
+                    errorMessage.textContent = 'An error occurred. Please try again later.';
+                });
+
         } else {
             // Show error if URL is not valid
             errorMessage.textContent = 'Please enter a valid YouTube URL.';
