@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Downloader</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
+        /* CSS for styling */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -85,30 +87,36 @@
         const downloadMP3 = document.getElementById("downloadMP3");
         const downloadMP4 = document.getElementById("downloadMP4");
 
+        // Clear previous error message and reset visibility
         errorMessage.textContent = '';
         downloadButtons.style.display = 'none';
 
+        // Regular expression to validate YouTube URL
         const youtubeRegex = /(?:https?:\/\/(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/?|(?:v|e(?:mbed)?)\/|\S+?[\?&]v=)([a-zA-Z0-9_-]{11}))(?:[^\n]*)|youtu\.be\/([a-zA-Z0-9_-]{11}))?/;
 
         if (youtubeRegex.test(videoUrl)) {
             const videoIdMatch = videoUrl.match(youtubeRegex);
-            const videoId = videoIdMatch[1] || videoIdMatch[2];
+            const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
 
+            // Call the backend API to fetch the download link
             fetch(`http://localhost:3000/download?videoId=${videoId}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.url) {
-                        downloadMP3.href = data.url;
-                        downloadMP4.href = data.url;
+                    if (data.downloadLink) {
+                        downloadMP3.href = data.downloadLink;
+                        downloadMP3.style.display = 'inline-block';
+                        downloadMP4.href = data.downloadLink; // Use the same link for MP4 for simplicity
+                        downloadMP4.style.display = 'inline-block';
                         downloadButtons.style.display = 'flex';
                     } else {
-                        errorMessage.textContent = 'Could not fetch download link.';
+                        errorMessage.textContent = 'Download failed.';
                     }
                 })
-                .catch(err => {
-                    errorMessage.textContent = 'Error fetching download links.';
+                .catch(error => {
+                    errorMessage.textContent = 'Error fetching the download link.';
                 });
         } else {
+            // Show error if URL is not valid
             errorMessage.textContent = 'Please enter a valid YouTube URL.';
         }
     }

@@ -1,35 +1,42 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 const port = 3000;
 
-// Serve static files for the frontend
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Enable CORS for all requests
+// Enable CORS
 app.use(cors());
 
-// API to fetch download links
+// Serve static files (like HTML, CSS, JS)
+app.use(express.static('public'));
+
+// API endpoint to handle download request
 app.get('/download', async (req, res) => {
     const videoId = req.query.videoId;
+
     if (!videoId) {
-        return res.status(400).json({ error: 'videoId is required' });
+        return res.status(400).json({ error: 'No video ID provided' });
     }
 
     try {
-        // External API call to get video download links
-        const apiUrl = `https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`;
-        const response = await axios.get(apiUrl);
-        res.json(response.data); // Send the API response to the frontend
+        const url = `https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`; // Example download API
+
+        // Making a request to the external YouTube MP3 download service
+        const response = await axios.get(url);
+
+        // If the external service works, return the download link
+        if (response.data && response.data.link) {
+            res.json({ downloadLink: response.data.link });
+        } else {
+            res.status(500).json({ error: 'Error fetching download link' });
+        }
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch from external API' });
+        res.status(500).json({ error: 'Failed to fetch data from external service' });
     }
 });
 
-// Listen to incoming requests on port 3000
+// Start the server
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
