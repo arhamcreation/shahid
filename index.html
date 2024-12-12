@@ -30,6 +30,7 @@
 </div>
 
 <script>
+    // JavaScript to handle validation and link generation
     document.getElementById("videoForm").addEventListener("submit", function(e) {
         e.preventDefault();
         validateAndGenerateLinks();
@@ -53,7 +54,9 @@
             const videoId = videoIdMatch[1] || videoIdMatch[2]; // Get video ID
 
             // Use a CORS proxy to bypass CORS issues
-            fetch(`https://cors-anywhere.herokuapp.com/https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`)
+            const apiUrl = `https://cors-anywhere.herokuapp.com/https://youtube-mp36.p.mnuu.nu/dl?id=${videoId}`;
+
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -61,7 +64,7 @@
                         downloadMP4.href = data.mp4Url || '#';
                         downloadButtons.style.display = 'flex';
                     } else {
-                        errorMessage.textContent = 'Download links not found.';
+                        errorMessage.textContent = 'Download links not found. Please try again later.';
                     }
                 })
                 .catch(error => {
