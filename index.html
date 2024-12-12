@@ -5,153 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Downloader</title>
     <style>
-        /* General body styling */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            background-color: #f4f4f4;
         }
-
-        /* Container style */
         .container {
-            max-width: 600px;
-            margin: 50px auto;
+            width: 60%;
+            margin: 20px auto;
             padding: 20px;
             background-color: #fff;
-            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
-        /* Title Styling */
         h1 {
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
+            color: #333;
         }
-
-        /* Input Field Styling */
-        input[type="text"] {
-            width: calc(100% - 40px);
-            padding: 10px;
+        .input-group {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 15px;
+        }
+        .input-group input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
         }
-
-        /* Button Styling */
-        button {
-            width: 100%;
+        .input-group button {
+            width: 18%;
             padding: 10px;
-            background-color: #007bff;
+            font-size: 16px;
+            background-color: #28a745;
+            color: #fff;
             border: none;
             border-radius: 4px;
-            color: white;
-            font-size: 16px;
             cursor: pointer;
         }
-
-        button:hover {
-            background-color: #0056b3;
+        .input-group button:hover {
+            background-color: #218838;
         }
-
-        /* Result and Player Section */
-        #results {
+        .results {
             margin-top: 20px;
+            display: none;
         }
-
-        #player {
-            margin-top: 20px;
+        .result-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .result-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: red;
             text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Video Downloader</h1>
-        <form action="#">
-            <input type="text" id="query" placeholder="Enter URL or Search" required>
-            <button type="submit">Search</button>
-        </form>
-        <div id="results"></div>
-        <div id="player"></div>
+<div class="container">
+    <h1>YouTube Video Downloader</h1>
+    <div class="input-group">
+        <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL">
+        <button id="downloadBtn">Download</button>
     </div>
 
-    <script>
-        // Initialize some basic variables
-        let gA = false;
-        let backend = "mnuu.nu"; // example backend server
+    <div class="results" id="results">
+        <div id="errorMessage" class="error-message"></div>
+        <div id="downloadLinks"></div>
+    </div>
+</div>
 
-        // Utility functions to create elements
-        function create(element) {
-            return document.createElement(element);
+<script>
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        var videoUrl = document.getElementById("videoUrl").value.trim();
+        var errorMessage = document.getElementById("errorMessage");
+        var downloadLinks = document.getElementById("downloadLinks");
+        
+        if (!videoUrl) {
+            errorMessage.innerHTML = "Please enter a valid URL.";
+            return;
         }
 
-        function createDiv(className, idName, innerHTML) {
-            var div = document.createElement("div");
-            if (className) div.className = className;
-            if (idName) div.id = idName;
-            if (innerHTML) div.innerHTML = innerHTML;
-            return div;
+        // Simple regex to check if it's a valid YouTube URL
+        var youtubeRegex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?v=|shorts\/)([a-zA-Z0-9_-]{11}))|(?:https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11}))/;
+        var match = videoUrl.match(youtubeRegex);
+        
+        if (match) {
+            var videoId = match[1] || match[2];
+            showDownloadOptions(videoId);
+        } else {
+            errorMessage.innerHTML = "Invalid YouTube URL. Please try again.";
+            downloadLinks.innerHTML = "";
+            document.getElementById("results").style.display = "none";
         }
+    });
 
-        function createA(href, text) {
-            var a = document.createElement("a");
-            a.href = href;
-            a.innerText = text;
-            return a;
-        }
+    function showDownloadOptions(videoId) {
+        var downloadLinks = document.getElementById("downloadLinks");
+        var resultsContainer = document.getElementById("results");
+        
+        // Simulating download options for MP3 and MP4
+        downloadLinks.innerHTML = `
+            <div class="result-item">
+                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">Watch Video</a>
+                <span>MP4 Download</span>
+            </div>
+            <div class="result-item">
+                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">Watch Video</a>
+                <span>MP3 Download</span>
+            </div>
+        `;
 
-        // Handle API and search function
-        function searchVideo(query) {
-            const apiUrl = `https://youtube-mp36.p.${backend}/dl?id=${query}&_=${Math.random()}`;
-
-            const xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.status === "ok") {
-                        displayResults(response.link);
-                    } else {
-                        displayError("An error occurred. Please try again.");
-                    }
-                }
-            };
-
-            xhr.open("GET", apiUrl, true);
-            xhr.setRequestHeader("x-request-host", `${backend}`);
-            xhr.send();
-        }
-
-        // Display the results
-        function displayResults(link) {
-            const resultsDiv = document.getElementById("results");
-            const downloadLink = createA(link, "Download MP3");
-            resultsDiv.innerHTML = ''; // Clear previous results
-            resultsDiv.appendChild(downloadLink);
-        }
-
-        // Display error messages
-        function displayError(message) {
-            const resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = `<p style="color: red;">${message}</p>`;
-        }
-
-        // Event listeners for form submit
-        document.querySelector("form").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const query = document.getElementById("query").value;
-            if (query.trim() === "") {
-                displayError("Please enter a valid URL or search query.");
-            } else {
-                searchVideo(query);
-            }
-        });
-    </script>
+        // Show results section
+        resultsContainer.style.display = "block";
+    }
+</script>
 
 </body>
 </html>
