@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="MP3Juice - Free MP3 Downloader">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3Juice - Free MP3 Downloader</title>
+    <style>
+        body {
+            background-color: #0069ca;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+        }
+        #header {
+            text-align: center;
+            max-width: 600px;
+            border-bottom: 1px solid #005fb6;
+            margin: 0 auto;
+            padding: 12px 0;
+        }
+        #header a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 6px;
+        }
+        #logo {
+            text-align: center;
+            max-width: 600px;
+            margin: 36px auto;
+        }
+        #logo img {
+            width: 207px;
+            height: 74px;
+        }
+        form {
+            background-color: #005fb6;
+            max-width: 576px;
+            border-radius: 8px;
+            margin: 0 auto;
+            padding: 12px;
+        }
+        form div {
+            position: relative;
+        }
+        form input {
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            height: 48px;
+            border: none;
+        }
+        form input[type="text"] {
+            color: #3679b7;
+            width: 79%;
+            border-radius: 4px 0 0 4px;
+            padding: 0 1.7%;
+            outline: none;
+        }
+        form input[type="submit"] {
+            color: #ffffff;
+            background-color: #0085ff;
+            width: 16%;
+            border-radius: 0 4px 4px 0;
+            padding: 0;
+            cursor: pointer;
+        }
+        #tou {
+            color: #bfe0ff;
+            font-size: 12px;
+            line-height: 22px;
+            text-align: center;
+            max-width: 600px;
+            margin: 9px auto 0 auto;
+        }
+        #tou a {
+            color: #bfe0ff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        #footer {
+            text-align: center;
+            max-width: 600px;
+            border-top: 1px solid #005fb6;
+            margin: 36px auto 0 auto;
+            padding: 12px 0;
+        }
+        #footer a {
+            color: #ffffff;
+            text-decoration: none;
+            margin: 0 6px;
+        }
+        .results {
+            max-width: 576px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .result {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+        }
+        .result h3 {
+            margin: 0;
+        }
+        .result a {
+            margin-right: 10px;
+            color: #0069ca;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <a href="index.html">Home</a>
+        <a href="add-on/index.html">Add-On</a>
+        <a href="faq/index.html">FAQ</a>
+        <a href="changelog/index.html">Changelog</a>
+    </div>
+
+    <div id="logo">
+        <a href="index.html">
+            <img src="images/logo.svg" alt="MP3Juice">
+        </a>
+    </div>
+
+    <form autocomplete="off" method="post" onsubmit="searchMusic(event)">
+        <div>
+            <div>
+                <input id="query" type="text" name="query" aria-label="query" required>
+                <input type="submit" value="Search">
+            </div>
+        </div>
+    </form>
+
+    <div id="tou">
+        By pressing "Search" you confirm your consent to our <a href="terms-of-use/index.html">Terms of Use</a>.
+    </div>
+
+    <div id="footer">
+        <a href="contact/index.html">Contact</a>
+        <a href="copyright-claims/index.html">Copyright Claims</a>
+        <a href="privacy-policy/index.html">Privacy Policy</a>
+        <a href="sra/index.html">SRA</a>
+        <a href="terms-of-use/index.html">ToU</a>
+    </div>
+
+    <script>
+        function searchMusic(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            if (query.trim() === '') {
+                alert('Please enter a search query');
+                return;
+            }
+
+            const apiUrl = 'http://127.0.0.1:5000/download'; // Replace with your deployed API URL
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: query }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'downloaded.mp3';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    alert('Your file has been downloaded!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Something went wrong. Please try again.');
+                });
+        }
+    </script>
+
+</body>
+</html>
